@@ -29,10 +29,8 @@ function getReminderType(rowData){
   currentDate.setHours(0, 0, 0, 0);
   var dueDate = new Date(dueDate);
   dueDate.setHours(0, 0, 0, 0);
-  var reminderDate = new Date();
-  reminderDate.setDate(dueDate.getDate() - daysNotice);
+  reminderDate = subtractDays(dueDate, daysNotice)
   reminderDate.setHours(0, 0, 0, 0);
-
   // Return Statement
   switch (true) {
     case dueDate < currentDate:
@@ -46,7 +44,12 @@ function getReminderType(rowData){
   };
 };
 
-
+// https://www.reddit.com/r/GoogleAppsScript/comments/wka0n7/subtracting_days_from_todays_date_in_apps_scripts/
+function subtractDays(date, days){
+  const unix = new Date(date).getTime()
+  const minusUnix = unix - (1000 * 60 * 60 * 24 * days)
+  return new Date(minusUnix)
+}
 
 function logTaskReminders(rowData, reminderType){
   // Get Data
@@ -78,3 +81,4 @@ return HEADERROW[columnIndex]
 // ToDo - tweak message body based on when it's due.
 // TODO - Tweak when message sent based on type
 // TODO - when sending list of overdue - denote if its been commented
+// for example - [NO COMMENT] OVERDUE - TASK - NAME
