@@ -1,12 +1,15 @@
 function main(){
-    for (const rowData of DATA) {
-      console.log(rowData)
-      var reminderType = getReminderType(rowData);
-      if (reminderType){
-        processTaskReminders(rowData, reminderType);
-      }
+  for (const rowData of DATA) {
+    // console.log(rowData)
+    var reminderType = getReminderType(rowData);
+    if (reminderType){
+      processTaskReminders(rowData, reminderType, null);
     }
   }
+  console.log(allReminders)
+  let body = allReminders.join('\n');
+  sendEmail(AC, "[AUTO] RA Reminder Summary", body)
+}
 
 var allReminders = []
 
@@ -48,7 +51,7 @@ function getReminderType(rowData){
 
 
 // Posts sample messages for debugging
-function processTaskReminders(rowData, reminderType){
+function processTaskReminders(rowData, reminderType, sendEmail=false){
   // Get data for this task
   task = getCellData(rowData, headers.task)
   dueDate = formatDate(getCellData(rowData, headers.dueDate))
@@ -64,10 +67,11 @@ function processTaskReminders(rowData, reminderType){
       allReminders.push(`${employee}`)
       // Functions
       _logTaskReminder(employee, task, reminderType, email);
-      //_emailTaskReminder(employee, task, reminderType, email);
+      if (sendEmail){
+        _emailTaskReminder(employee, task, reminderType, email);
+      }
     }
   });
-  console.log(allReminders)
 };
 
 
@@ -91,9 +95,21 @@ function _logTaskReminder(employee, task, reminderType, email){
 };
 
 
+// Email messages in live version of script
 function _emailTaskReminder(employee, task, reminderType, email){
-  // Email messages in live version of script
-  sendEmail(recipient, subject, body, cc=null)
+  recipient = email
+  subject = `[RA_TASK] ${employee} ${task} ${reminderType}`
+  switch (true) {
+  case dueDate == DUE["late"]:
+    var body = `${task} was due on ${dueDate}. Please make sure to get this completed. \n Link: ${SHEET_URL}`;     
+  case dueDate == DUE["today"]:
+    var body = `${task} is due on ${dueDate}. Please make sure to get this completed. \n Link: ${SHEET_URL}`;    
+  case dueDate == DUE["soon"]:
+    var body = `${task} is due on ${dueDate}. Please make sure to get this completed. \n Link: ${SHEET_URL}`;    
+  default:
+    var body = `${task} is due on ${dueDate}. Please make sure to get this completed. \n Link: ${SHEET_URL}`;  
+  }
+  sendEmail(recipient, subject, body, AC)
 }
 
 
