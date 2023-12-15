@@ -1,15 +1,14 @@
 function main(){
-    //var rowIndex = 2 // Header is skipped
     for (const rowData of DATA) {
       console.log(rowData)
       var reminderType = getReminderType(rowData);
       if (reminderType){
-        sendTaskReminders(rowData, reminderType);
+        processTaskReminders(rowData, reminderType);
       }
-      //rowIndex ++ 
     }
   }
-  
+
+var allReminders = []
 
 function getReminderType(rowData){
   // Get Data
@@ -49,10 +48,11 @@ function getReminderType(rowData){
 
 
 // Posts sample messages for debugging
-function taskReminders(rowData, reminderType){
+function processTaskReminders(rowData, reminderType){
   // Get data for this task
   task = getCellData(rowData, headers.task)
-  dueDate = getCellData(rowData, headers.dueDate)
+  dueDate = formatDate(getCellData(rowData, headers.dueDate))
+  allReminders.push(`TASK: ${task}, ${dueDate}`)
 
   // Iterate through all statuses
   rowData.slice(3).forEach((status, index) => {
@@ -61,10 +61,13 @@ function taskReminders(rowData, reminderType){
       // Get employee data associated with status
       var employee = _getEmployee(index + 3, status);
       var email = emailDict[employee];
+      allReminders.push(`${employee}`)
       // Functions
       _logTaskReminder(employee, task, reminderType, email);
+      //_emailTaskReminder(employee, task, reminderType, email);
     }
   });
+  console.log(allReminders)
 };
 
 
@@ -77,20 +80,20 @@ function _logTaskReminder(employee, task, reminderType, email){
   console.log("TITLE", task, reminderType)
   switch (true) {
     case dueDate == DUE["late"]:
-      console.log(`BODY ${task} was due on ${removeTime(dueDate)}. Please make sure to get this completed. Link: ${SHEET_URL}`);     
+      console.log(`BODY ${task} was due on ${dueDate}. Please make sure to get this completed. Link: ${SHEET_URL}`);     
     case dueDate == DUE["today"]:
-      console.log(`BODY ${task} is due on ${removeTime(dueDate)}. Please make sure to get this completed. Link: ${SHEET_URL}`);    
+      console.log(`BODY ${task} is due on ${dueDate}. Please make sure to get this completed. Link: ${SHEET_URL}`);    
     case dueDate == DUE["soon"]:
-      console.log(`BODY ${task} is due on ${removeTime(dueDate)}. Please make sure to get this completed. Link: ${SHEET_URL}`);    
+      console.log(`BODY ${task} is due on ${dueDate}. Please make sure to get this completed. Link: ${SHEET_URL}`);    
     default:
-      console.log(`BODY ${task} is due on ${removeTime(dueDate)}. Please make sure to get this completed. Link: ${SHEET_URL}`);  
+      console.log(`BODY ${task} is due on ${dueDate}. Please make sure to get this completed. Link: ${SHEET_URL}`);  
   }
 };
 
 
-function _emailTaskReminder(rowData, reminderType, log=true, email=false){
-// Email messages in live version of script
-
+function _emailTaskReminder(employee, task, reminderType, email){
+  // Email messages in live version of script
+  sendEmail(recipient, subject, body, cc=null)
 }
 
 
@@ -107,12 +110,3 @@ function _getEmployee(columnIndex){
 // Therefore, the employee name can be found by taking the index of all headers.
 return HEADERROW[columnIndex]
 };
-
-
-
-// ToDo - don't hardcode the due messages. 
-// ToDo - tweak message body based on when it's due.
-// TODO - Tweak when message sent based on type
-// TODO - when sending list of overdue - denote if its been commented
-// for example - [NO COMMENT] OVERDUE - TASK - NAME
-// capitalize headers
