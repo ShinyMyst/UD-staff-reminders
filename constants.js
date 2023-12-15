@@ -3,6 +3,7 @@
 // Sheet Information
 const SHEET_ID = "1V6KGcz1HH57MlndOk4W3vRaTdV6lhGkUAoDiKCB5_Uc"
 const PAGE_NAME = "Tasks"
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}`;
 
 // Relevant Headers
 const headers = {
@@ -21,6 +22,6 @@ const status = ['✔️', '🚧' , '⏳', '🦺', '❌', '✖️']
 const NO_REMINDER = ['✔️', '🚧', '⏳', '✖️']
 
 const emailDict = {
-  "Andrew C.": "sgodby1@udayton.edu"
+  ".": ".@udayton.edu"
 };
 
