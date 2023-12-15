@@ -1,11 +1,12 @@
 function main(){
-    var rowIndex = 2 // Header is skipped
+    //var rowIndex = 2 // Header is skipped
     for (const rowData of DATA) {
+      console.log(rowData)
       var reminderType = getReminderType(rowData);
       if (reminderType){
-        logTaskReminders(rowData, reminderType);
+        sendTaskReminders(rowData, reminderType);
       }
-      rowIndex ++ 
+      //rowIndex ++ 
     }
   }
   
@@ -17,9 +18,6 @@ function getReminderType(rowData){
   daysNotice = getCellData(rowData, headers.daysNotice)
 
   // Determine if valid reminder is possible
-  if (task === "" || daysNotice === "") {
-    return false;
-  };
   if (!(dueDate instanceof Date) || isNaN(daysNotice)) {
     return false;
   };
@@ -29,44 +27,79 @@ function getReminderType(rowData){
   currentDate.setHours(0, 0, 0, 0);
   var dueDate = new Date(dueDate);
   dueDate.setHours(0, 0, 0, 0);
-  reminderDate = subtractDays(dueDate, daysNotice)
+  reminderDate = _subtractDays(dueDate, daysNotice)
   reminderDate.setHours(0, 0, 0, 0);
+
   // Return Statement
   switch (true) {
     case dueDate < currentDate:
-        return "Overdue";
+      console.log(DUE['late'])
+      return DUE["late"];
     case dueDate.getTime() === currentDate.getTime():
-        return "Due Today";
+      console.log(DUE['today'])
+      return DUE["today"];
     case currentDate.getTime() === reminderDate.getTime():
-        return "Due Soon";
+      console.log(DUE['soon'])
+      return DUE["soon"];
     default:
-        return false;
+      console.log(false)
+      return false;
   };
 };
 
+
+// Posts sample messages for debugging
+function taskReminders(rowData, reminderType){
+  // Get data for this task
+  task = getCellData(rowData, headers.task)
+  dueDate = getCellData(rowData, headers.dueDate)
+
+  // Iterate through all statuses
+  rowData.slice(3).forEach((status, index) => {
+    // Only process those that require a reminder
+    if (!NO_REMINDER.includes(status.trim())) {
+      // Get employee data associated with status
+      var employee = _getEmployee(index + 3, status);
+      var email = emailDict[employee];
+      // Functions
+      _logTaskReminder(employee, task, reminderType, email);
+    }
+  });
+};
+
+
+/* =============
+Helper Functions
+============= */ 
+// Helper that logs task reminder in log
+function _logTaskReminder(employee, task, reminderType, email){
+  console.log("TARGET", employee, "@", email)
+  console.log("TITLE", task, reminderType)
+  switch (true) {
+    case dueDate == DUE["late"]:
+      console.log(`BODY ${task} was due on ${removeTime(dueDate)}. Please make sure to get this completed. Link: ${SHEET_URL}`);     
+    case dueDate == DUE["today"]:
+      console.log(`BODY ${task} is due on ${removeTime(dueDate)}. Please make sure to get this completed. Link: ${SHEET_URL}`);    
+    case dueDate == DUE["soon"]:
+      console.log(`BODY ${task} is due on ${removeTime(dueDate)}. Please make sure to get this completed. Link: ${SHEET_URL}`);    
+    default:
+      console.log(`BODY ${task} is due on ${removeTime(dueDate)}. Please make sure to get this completed. Link: ${SHEET_URL}`);  
+  }
+};
+
+
+function _emailTaskReminder(rowData, reminderType, log=true, email=false){
+// Email messages in live version of script
+
+}
+
+
 // https://www.reddit.com/r/GoogleAppsScript/comments/wka0n7/subtracting_days_from_todays_date_in_apps_scripts/
-function subtractDays(date, days){
+function _subtractDays(date, days){
   const unix = new Date(date).getTime()
   const minusUnix = unix - (1000 * 60 * 60 * 24 * days)
   return new Date(minusUnix)
 }
-
-function logTaskReminders(rowData, reminderType){
-  // Get Data
-  task = getCellData(rowData, headers.task)
-  dueDate = getCellData(rowData, headers.dueDate)
-  const sheetURL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}`;
-
-
-  rowData.slice(3).forEach((status, index) => {
-    if (!NO_REMINDER.includes(status.trim())) {
-      var employee = _getEmployee(index+3, status)
-      //var email = emailDict[employee]
-      console.log("TARGET", employee)
-      console.log("TITLE", task, reminderType)
-      console.log(`BODY ${task} is due on ${removeTime(dueDate)}. Please make sure to get this completed. Link: ${sheetURL}`);    };
-  });
-};
 
 
 function _getEmployee(columnIndex){
@@ -82,3 +115,4 @@ return HEADERROW[columnIndex]
 // TODO - Tweak when message sent based on type
 // TODO - when sending list of overdue - denote if its been commented
 // for example - [NO COMMENT] OVERDUE - TASK - NAME
+// capitalize headers
