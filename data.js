@@ -18,7 +18,7 @@ function getCellData(entry, headerString){
       return entry[cellIndex]
 };
 
-function removeTime(inputDate){
+function formatDate(inputDate){
   // Removes the time/year from the date.
   var date = new Date(inputDate)
   var formattedDate = date.toLocaleDateString('en-US', {
